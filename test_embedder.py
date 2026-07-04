@@ -128,3 +128,46 @@ print(f"Supported: {details['supported']}/{details['total_claims']} claims")
 for claim in details['claims']:
     status = "✅ supported" if claim['supported'] else "❌ hallucinated"
     print(f"  {status} ({claim['best_similarity']}) — {claim['claim']}")
+
+
+
+
+
+
+
+
+
+
+# Test Answer Relevance Metric
+print("\n" + "="*50)
+print("TESTING ANSWER RELEVANCE METRIC")
+print("="*50)
+
+from bharatrag.metrics.answer_relevance import AnswerRelevance
+
+ar = AnswerRelevance(language="hindi")
+
+# Test 1 — Relevant answer (should score HIGH)
+score1 = ar.score(
+    question="भारत की राजधानी क्या है?",
+    answer="भारत की राजधानी नई दिल्ली है।"
+)
+print(f"\nTest 1 - Relevant answer: {score1}  (should be HIGH > 0.5)")
+
+# Test 2 — Irrelevant answer (should score LOW)
+score2 = ar.score(
+    question="भारत की राजधानी क्या है?",
+    answer="आज मौसम बहुत अच्छा है और बारिश हो रही है।"
+)
+print(f"Test 2 - Irrelevant answer: {score2}  (should be LOW < 0.3)")
+
+# Test 3 — Detailed breakdown
+print("\nTest 3 - Detailed breakdown:")
+cases = [
+    ("पीएम किसान योजना क्या है?", "पीएम किसान सम्मान निधि एक सरकारी योजना है जो किसानों को 6000 रुपये देती है।"),
+    ("पीएम किसान योजना क्या है?", "नई दिल्ली भारत की राजधानी है।"),
+    ("पीएम किसान योजना क्या है?", "मुझे नहीं पता।"),
+]
+for q, a in cases:
+    detail = ar.score_detailed(q, a)
+    print(f"  {detail['overall']} ({detail['interpretation']}) — {detail['answer']}")
