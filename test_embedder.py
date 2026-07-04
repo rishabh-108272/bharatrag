@@ -79,3 +79,52 @@ details = cr.score_detailed(
 print(f"Overall score: {details['overall']}")
 for chunk in details['chunks']:
     print(f"  {chunk['score']} — {chunk['chunk']}")
+
+
+
+
+
+
+    # Test Groundedness Metric
+print("\n" + "="*50)
+print("TESTING GROUNDEDNESS METRIC")
+print("="*50)
+
+from bharatrag.metrics.groundedness import Groundedness
+
+gr = Groundedness(language="hindi")
+
+# Test 1 — Fully grounded answer (should score HIGH)
+score1 = gr.score(
+    answer="भारत की राजधानी नई दिल्ली है। यह एक बड़ा शहर है।",
+    contexts=[
+        "भारत की राजधानी नई दिल्ली है।",
+        "नई दिल्ली भारत का सबसे बड़ा शहर है।"
+    ]
+)
+print(f"\nTest 1 - Grounded answer: {score1}  (should be HIGH > 0.7)")
+
+# Test 2 — Hallucinated answer (should score LOW)
+score2 = gr.score(
+    answer="भारत की राजधानी मुंबई है। वहां 5 करोड़ लोग रहते हैं।",
+    contexts=[
+        "भारत की राजधानी नई दिल्ली है।",
+        "नई दिल्ली में संसद भवन है।"
+    ]
+)
+print(f"Test 2 - Hallucinated answer: {score2}  (should be LOW < 0.5)")
+
+# Test 3 — Detailed breakdown
+print("\nTest 3 - Detailed breakdown:")
+details = gr.score_detailed(
+    answer="पीएम किसान योजना किसानों के लिए है। इसमें 6000 रुपये मिलते हैं। यह योजना 2019 में शुरू हुई।",
+    contexts=[
+        "पीएम किसान सम्मान निधि योजना भारत सरकार की किसानों के लिए योजना है।",
+        "इस योजना के तहत किसानों को हर साल 6000 रुपये तीन किश्तों में मिलते हैं।",
+    ]
+)
+print(f"Overall: {details['overall']}")
+print(f"Supported: {details['supported']}/{details['total_claims']} claims")
+for claim in details['claims']:
+    status = "✅ supported" if claim['supported'] else "❌ hallucinated"
+    print(f"  {status} ({claim['best_similarity']}) — {claim['claim']}")
