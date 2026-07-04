@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "bharatrag"
+version = "0.1.0"
+description = "RAG evaluation library for Indian languages (Hindi, Marathi)"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.9"
+authors = [
+    {name = "Pradnya Gundu", email = "gundupradnya@gmail.com"}
+]
+keywords = ["RAG", "evaluation", "Hindi", "Marathi", "Indic", "NLP", "LLM"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "sentence-transformers>=2.2.0",
+    "numpy>=1.24.0",
+    "scikit-learn>=1.2.0",
+    "python-dotenv>=1.0.0",
+    "langchain>=0.1.0",
+    "chromadb>=0.4.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/pradnyagundu/bharatrag"
+Repository = "https://github.com/pradnyagundu/bharatrag"
