@@ -3,10 +3,15 @@ BharatRAG — RAG Evaluation Library for Indian Languages
 Author: Pradnya Gundu
 """
 
+import logging
+
 from bharatrag.embeddings.indic_embeddings import IndicEmbedder
 from bharatrag.metrics.context_relevance import ContextRelevance
 from bharatrag.metrics.groundedness import Groundedness
 from bharatrag.metrics.answer_relevance import AnswerRelevance
+
+
+logger = logging.getLogger(__name__)
 
 __version__ = "0.1.0"
 __author__ = "Pradnya Gundu"
@@ -35,8 +40,6 @@ def evaluate(questions, contexts, answers, language="hindi"):
         ... )
         >>> print(results)
     """
-    print(f"\nLoading embedding model for {language}...")
-
     # Load embedder ONCE and share across all 3 metrics
     embedder = IndicEmbedder(language=language)
 
@@ -45,7 +48,7 @@ def evaluate(questions, contexts, answers, language="hindi"):
     gr = Groundedness(language=language, embedder=embedder)
     ar = AnswerRelevance(language=language, embedder=embedder)
 
-    print(f"Evaluating {len(questions)} question(s) in {language}...")
+    logger.info("Evaluating %d question(s) in %s...", len(questions), language)
 
     cr_scores = []
     gr_scores = []
@@ -54,7 +57,7 @@ def evaluate(questions, contexts, answers, language="hindi"):
     for i, (question, context, answer) in enumerate(
         zip(questions, contexts, answers)
     ):
-        print(f"  Scoring question {i+1}/{len(questions)}...")
+        logger.debug("Scoring question %d/%d...", i + 1, len(questions))
         cr_scores.append(cr.score(question, context))
         gr_scores.append(gr.score(answer, context))
         ar_scores.append(ar.score(question, answer))
