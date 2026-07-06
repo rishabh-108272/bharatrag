@@ -126,10 +126,9 @@ print(score)  # 0.61
 
 ## Supported Languages
 
-| Language | Model Used |
-|---|---|
 | Hindi | `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` |
 | Marathi | `l3cube-pune/marathi-sentence-bert-nli` |
+| Tamil | `l3cube-pune/tamil-sentence-bert-nli` |
 | English | `sentence-transformers/all-MiniLM-L6-v2` |
 
 More languages coming soon — Tamil, Bengali, Gujarati.
