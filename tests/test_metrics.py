@@ -3,6 +3,7 @@ BharatRAG Test Suite
 Run with: pytest tests/ -v
 """
 
+from sympy.polys.polyconfig import query
 import pytest
 from bharatrag.embeddings.indic_embeddings import IndicEmbedder
 from bharatrag.metrics.context_relevance import ContextRelevance
@@ -221,10 +222,12 @@ class TestEvaluateValidation:
 
 # ── Integration tests ────────────────────────
 class TestIntegrations:
+    # To test the langchain dependency and evaluator
     def test_langchain_evaluator(self, hindi_embedder):
         try:
             from bharatrag.integrations.langchain import BharatRAGLangChainEvaluator
         except ImportError:
+            # Kept skipped for now as it is an optional dependency
             pytest.skip(
                 "Langchain dependencies are not installed. Skipping integration test."
             )
@@ -247,3 +250,100 @@ class TestIntegrations:
     def test_llamaindex_evaluator_raises_importerror_without_dependency(self):
         with pytest.raises(ImportError, match="Could not import llama_index"):
             from bharatrag.integrations.llamaindex import BharatRAGLlamaIndexEvaluator
+
+    # Mock integration test for llamaindex evaluator
+    def test_llamaindex_evaluator_mocked(self):
+        import sys
+        from unittest.mock import MagicMock
+
+        original_modules = sys.modules.copy()
+        try:
+            mock_eval_module = MagicMock()
+
+            class DummyBaseEvaluator:
+                pass
+
+            class DummyEvaluationResult:
+                def __init__(
+                    self,
+                    query=None,
+                    contexts=None,
+                    response=None,
+                    score=None,
+                    passing=None,
+                    feedback=None,
+                ):
+                    self.query = query
+                    self.contexts = contexts
+                    self.response = response
+                    self.score = score
+                    self.passing = passing
+                    self.feedback = feedback
+
+            mock_eval_module.BaseEvaluator = DummyBaseEvaluator
+            mock_eval_module.EvaluationResult = DummyEvaluationResult
+
+            sys.modules["llama_index"] = MagicMock()
+            sys.modules["llama_index.core"] = MagicMock()
+            sys.modules["llama_index.core.evaluation"] = mock_eval_module
+
+            if "bharatrag.integrations.llamaindex" in sys.modules:
+                del sys.modules["bharatrag.integrations.llamaindex"]
+
+            from bharatrag.integrations.llamaindex import BharatRAGLlamaIndexEvaluator
+
+            evaluator = BharatRAGLlamaIndexEvaluator(
+                metric="groundedness", language="hindi"
+            )
+            assert evaluator is not None
+
+            result = evaluator.evaluate(
+                query="पीएम किसान योजना में कितने रुपये मिलते हैं?",
+                contexts=[
+                    "प्रधानमंत्री किसान सम्मान निधि योजना के तहत किसानों को 6000 रुपये मिलते हैं।"
+                ],
+                response="पीएम किसान योजना में 6000 रुपये मिलते हैं।",
+            )
+            assert result.score == 1.0
+            assert result.passing is True
+            assert "groundedness score: 1.0" in result.feedback
+        finally:
+            sys.modules.clear()
+            sys.modules.update(original_modules)
+
+    # Mock Unit integration test for langchain evaluator
+    def test_langchain_evaluator_mocked(self):
+        import sys
+        from unittest.mock import MagicMock
+
+        original_modules = sys.modules.copy()
+        try:
+            mock_langchain_core = MagicMock()
+
+            class DummyStringEvaluator:
+                pass
+
+            mock_langchain_core.evaluation.StringEvaluator = DummyStringEvaluator
+
+            sys.modules["langchain_core"] = mock_langchain_core
+            sys.modules["langchain_core.evaluation"] = mock_langchain_core.evaluation
+
+            if "bharatrag.integrations.langchain" in sys.modules:
+                del sys.modules["bharatrag.integrations.langchain"]
+
+            from bharatrag.integrations.langchain import BharatRAGLangChainEvaluator
+
+            evaluator = BharatRAGLangChainEvaluator(
+                metric="groundedness", language="hindi"
+            )
+            assert evaluator is not None
+
+            result = evaluator._evaluate_strings(
+                prediction="पीएम किसान योजना के तहत किसानों को 1.5 लाख रुपये मिलते हैं। डॉ. राम ने कहा कि यह योजना अच्छी है।",
+                reference="पीएम किसान योजना के तहत किसानों को 1.5 लाख रुपये मिलते हैं। डॉ. राम ने कहा कि यह योजना अच्छी है।",
+                input="पीएम किसान योजना में कितने रुपये मिलते हैं?",
+            )
+            assert result["score"] == 1.0
+        finally:
+            sys.modules.clear()
+            sys.modules.update(original_modules)
