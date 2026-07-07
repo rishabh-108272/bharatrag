@@ -21,80 +21,69 @@ def run_benchmark(data_path: str = "data/benchmark.json"):
     print(f"Loaded {dataset['total']} examples")
     print(f"Languages: {dataset['languages']}")
 
-    # Split by language
-    hindi_data = [d for d in dataset["data"] if d["language"] == "hindi"]
-    marathi_data = [d for d in dataset["data"] if d["language"] == "marathi"]
+    results = {}
 
-    # ── HINDI EVALUATION ──────────────────────────────────────────
-    print("\n" + "─" * 60)
-    print("HINDI EVALUATION")
-    print("─" * 60)
+    for language in dataset["languages"]:
+        lang_data = [d for d in dataset["data"] if d["language"] == language]
 
-    # Test 1: Correct answers
-    hindi_results = evaluate(
-        questions=[d["question"] for d in hindi_data],
-        contexts=[d["context"] for d in hindi_data],
-        answers=[d["ground_truth_answer"] for d in hindi_data],
-        language="hindi"
-    )
-    print("\n✅ With CORRECT answers:")
-    print(f"   Context Relevance:  {hindi_results['context_relevance']}")
-    print(f"   Groundedness:       {hindi_results['groundedness']}")
-    print(f"   Answer Relevance:   {hindi_results['answer_relevance']}")
-    print(f"   Overall:            {hindi_results['overall']}")
+        # ── LANGUAGE EVALUATION ──────────────────────────────────────
+        print("\n" + "─" * 60)
+        print(f"{language.upper()} EVALUATION")
+        print("─" * 60)
 
-    # Test 2: Hallucinated answers
-    hindi_hallucinated = evaluate(
-        questions=[d["question"] for d in hindi_data],
-        contexts=[d["context"] for d in hindi_data],
-        answers=[d["hallucinated_answer"] for d in hindi_data],
-        language="hindi"
-    )
-    print("\n❌ With HALLUCINATED answers:")
-    print(f"   Context Relevance:  {hindi_hallucinated['context_relevance']}")
-    print(f"   Groundedness:       {hindi_hallucinated['groundedness']}")
-    print(f"   Answer Relevance:   {hindi_hallucinated['answer_relevance']}")
-    print(f"   Overall:            {hindi_hallucinated['overall']}")
+        # Test 1: Correct answers
+        correct_results = evaluate(
+            questions=[d["question"] for d in lang_data],
+            contexts=[d["context"] for d in lang_data],
+            answers=[d["ground_truth_answer"] for d in lang_data],
+            language=language
+        )
+        print("\n✅ With CORRECT answers:")
+        print(f"   Context Relevance:  {correct_results['context_relevance']}")
+        print(f"   Groundedness:       {correct_results['groundedness']}")
+        print(f"   Answer Relevance:   {correct_results['answer_relevance']}")
+        print(f"   Overall:            {correct_results['overall']}")
 
-    # ── MARATHI EVALUATION ─────────────────────────────────────────
-    print("\n" + "─" * 60)
-    print("MARATHI EVALUATION")
-    print("─" * 60)
+        # Test 2: Hallucinated answers
+        hallucinated_results = evaluate(
+            questions=[d["question"] for d in lang_data],
+            contexts=[d["context"] for d in lang_data],
+            answers=[d["hallucinated_answer"] for d in lang_data],
+            language=language
+        )
+        print("\n❌ With HALLUCINATED answers:")
+        print(f"   Context Relevance:  {hallucinated_results['context_relevance']}")
+        print(f"   Groundedness:       {hallucinated_results['groundedness']}")
+        print(f"   Answer Relevance:   {hallucinated_results['answer_relevance']}")
+        print(f"   Overall:            {hallucinated_results['overall']}")
 
-    marathi_results = evaluate(
-        questions=[d["question"] for d in marathi_data],
-        contexts=[d["context"] for d in marathi_data],
-        answers=[d["ground_truth_answer"] for d in marathi_data],
-        language="marathi"
-    )
-    print("\n✅ With CORRECT answers:")
-    print(f"   Context Relevance:  {marathi_results['context_relevance']}")
-    print(f"   Groundedness:       {marathi_results['groundedness']}")
-    print(f"   Answer Relevance:   {marathi_results['answer_relevance']}")
-    print(f"   Overall:            {marathi_results['overall']}")
-
-    marathi_hallucinated = evaluate(
-        questions=[d["question"] for d in marathi_data],
-        contexts=[d["context"] for d in marathi_data],
-        answers=[d["hallucinated_answer"] for d in marathi_data],
-        language="marathi"
-    )
-    print("\n❌ With HALLUCINATED answers:")
-    print(f"   Context Relevance:  {marathi_hallucinated['context_relevance']}")
-    print(f"   Groundedness:       {marathi_hallucinated['groundedness']}")
-    print(f"   Answer Relevance:   {marathi_hallucinated['answer_relevance']}")
-    print(f"   Overall:            {marathi_hallucinated['overall']}")
+        results[language] = {
+            "correct": correct_results,
+            "hallucinated": hallucinated_results,
+        }
 
     # ── SUMMARY TABLE ──────────────────────────────────────────────
     print("\n" + "=" * 60)
     print("BENCHMARK SUMMARY")
     print("=" * 60)
-    print(f"\n{'Metric':<25} {'Hindi✅':>10} {'Hindi❌':>10} {'Marathi✅':>10} {'Marathi❌':>10}")
-    print("-" * 65)
-    print(f"{'Context Relevance':<25} {hindi_results['context_relevance']:>10} {hindi_hallucinated['context_relevance']:>10} {marathi_results['context_relevance']:>10} {marathi_hallucinated['context_relevance']:>10}")
-    print(f"{'Groundedness':<25} {hindi_results['groundedness']:>10} {hindi_hallucinated['groundedness']:>10} {marathi_results['groundedness']:>10} {marathi_hallucinated['groundedness']:>10}")
-    print(f"{'Answer Relevance':<25} {hindi_results['answer_relevance']:>10} {hindi_hallucinated['answer_relevance']:>10} {marathi_results['answer_relevance']:>10} {marathi_hallucinated['answer_relevance']:>10}")
-    print(f"{'Overall':<25} {hindi_results['overall']:>10} {hindi_hallucinated['overall']:>10} {marathi_results['overall']:>10} {marathi_hallucinated['overall']:>10}")
+
+    header = f"\n{'Metric':<25}"
+    for language in dataset["languages"]:
+        header += f" {language.capitalize() + '✅':>10} {language.capitalize() + '❌':>10}"
+    print(header)
+    print("-" * (25 + 21 * len(dataset["languages"])))
+
+    for metric, label in [
+        ("context_relevance", "Context Relevance"),
+        ("groundedness", "Groundedness"),
+        ("answer_relevance", "Answer Relevance"),
+        ("overall", "Overall"),
+    ]:
+        row = f"{label:<25}"
+        for language in dataset["languages"]:
+            row += f" {results[language]['correct'][metric]:>10} {results[language]['hallucinated'][metric]:>10}"
+        print(row)
+
     print("\n✅ = correct answers   ❌ = hallucinated answers")
     print("BharatRAG should score LOWER for hallucinated answers.")
 
