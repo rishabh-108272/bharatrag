@@ -20,9 +20,9 @@ except ImportError:
 
 
 class BharatRAGLangChainEvaluator(StringEvaluator):
-    """BharatRAG Evaluator wrapper for LangCHain.
+    """BharatRAG Evaluator wrapper for LangChain.
     Allows running context relevance, groundedness and answer relevance
-    evaluations directly inside Langchain workflows.
+    evaluations directly inside LangChain workflows.
     """
 
     def __init__(self, metric: str = "overall", language: str = "hindi", **kwargs: Any):
@@ -31,18 +31,17 @@ class BharatRAGLangChainEvaluator(StringEvaluator):
 
         Args:
             metric: The specific metric to evaluate ("overall", "context_relevance",
-            "groundedness","answer_relevance").
-
-            language: Language of the text ("hindi","marathi","tamil","english").
-
-            **kwargs: Additional arguments to pass to the evaluate function (e.g. groundedness_threshold).
-
+                "groundedness", "answer_relevance").
+            language: Language of the text ("hindi", "marathi", "tamil", "english").
+            **kwargs: Additional arguments to pass to the evaluate function
+                (e.g. groundedness_threshold).
         """
-
-        super().__init__()
-        self.metric = metric
-        self.language = language
-        self.evaluation_kwargs = kwargs
+        # StringEvaluator may be a pydantic model requiring specific fields.
+        # Bypass its __init__ and set our attributes directly to avoid
+        # pydantic validation errors (e.g. required grading_function field).
+        object.__setattr__(self, "metric", metric)
+        object.__setattr__(self, "language", language)
+        object.__setattr__(self, "evaluation_kwargs", kwargs)
 
     @property
     def requires_input(self) -> bool:
@@ -71,7 +70,7 @@ class BharatRAGLangChainEvaluator(StringEvaluator):
         if not reference:
             raise ValueError("Reference context is required for evaluation.")
 
-        # Langchain reference might be a single string. Convert to list format for BharatRAG.
+        # LangChain reference might be a single string. Convert to list format for BharatRAG.
         contexts = [reference] if isinstance(reference, str) else list(reference)
 
         results = evaluate(
