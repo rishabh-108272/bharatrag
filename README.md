@@ -163,6 +163,9 @@ print(result.score)
 | Hindi | `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` |
 | Marathi | `l3cube-pune/marathi-sentence-bert-nli` |
 | Tamil | `l3cube-pune/tamil-sentence-bert-nli` |
+| Bengali | `l3cube-pune/bengali-sentence-bert-nli` |
+| Telugu | `l3cube-pune/telugu-sentence-bert-nli` |
+| Gujarati | `l3cube-pune/gujarati-sentence-bert-nli` |
 | English | `sentence-transformers/all-MiniLM-L6-v2` |
 
 More languages coming soon — Bengali, Gujarati, Punjabi.
