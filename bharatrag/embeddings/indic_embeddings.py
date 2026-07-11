@@ -30,9 +30,10 @@ INDIC_MODELS = {
     "marathi": "l3cube-pune/marathi-sentence-bert-nli",
     "tamil": "l3cube-pune/tamil-sentence-bert-nli",
     "bengali": "l3cube-pune/bengali-sentence-bert-nli",
+    "telugu": "l3cube-pune/telugu-sentence-bert-nli",
+    "gujarati": "l3cube-pune/gujarati-sentence-bert-nli",
     "english": "sentence-transformers/all-MiniLM-L6-v2",
 }
-
 # Module-level cache: one SentenceTransformer instance per language
 _model_cache = {}
 
