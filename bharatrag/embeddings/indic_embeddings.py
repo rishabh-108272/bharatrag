@@ -1,6 +1,7 @@
 """
 Indic Embeddings — loads multilingual embedding models
-that actually understand Hindi and Marathi.
+that understand Indian languages: Hindi, Marathi, Tamil,
+Bengali, Telugu, Gujarati, and English.
 """
 
 import logging
@@ -58,7 +59,8 @@ class IndicEmbedder:
     def __init__(self, language: str = "hindi"):
         """
         Args:
-            language: "hindi", "marathi", or "english"
+            language: one of "hindi", "marathi", "tamil", "bengali",
+                      "telugu", "gujarati", or "english"
         """
         if language not in INDIC_MODELS:
             raise ValueError(

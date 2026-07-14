@@ -39,7 +39,8 @@ def evaluate(
         questions: list of questions (in Hindi/Marathi)
         contexts:  list of lists — retrieved context chunks per question
         answers:   list of generated answers
-        language:  "hindi", "marathi", or "english" (default: "hindi")
+        language:  one of "hindi", "marathi", "tamil", "bengali", "telugu",
+                   "gujarati", or "english" (default: "hindi")
 
     Returns:
         dict with scores for each metric
